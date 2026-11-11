@@ -590,35 +590,47 @@ class HairCareStoreHandler(http.server.BaseHTTPRequestHandler):
         conn.close()
         return self.send_error_json("Endpoint not found", 404)
 
+import errno
+import sys
+
 def run_server(port=PORT):
     init_db()
     socketserver.TCPServer.allow_reuse_address = True
     
-    max_attempts = 10
-    httpd = None
-    active_port = port
+    # If running in cloud hosting (Render, Railway, Heroku), bind directly to 0.0.0.0 on the assigned PORT
+    host = "0.0.0.0"
+    is_cloud = "PORT" in os.environ
+    
+    if is_cloud:
+        server_address = (host, port)
+        httpd = socketserver.TCPServer(server_address, HairCareStoreHandler)
+        active_port = port
+    else:
+        max_attempts = 10
+        httpd = None
+        active_port = port
 
-    for p in range(port, port + max_attempts):
-        try:
-            server_address = ("", p)
-            httpd = socketserver.TCPServer(server_address, HairCareStoreHandler)
-            active_port = p
-            break
-        except OSError as e:
-            if e.errno == 48:
-                print(f"⚠️ Port {p} is busy, checking port {p + 1}...")
-                continue
-            raise e
+        for p in range(port, port + max_attempts):
+            try:
+                server_address = (host, p)
+                httpd = socketserver.TCPServer(server_address, HairCareStoreHandler)
+                active_port = p
+                break
+            except OSError as e:
+                if e.errno in (errno.EADDRINUSE, 48, 98):
+                    print(f"⚠️ Port {p} is busy, checking port {p + 1}...")
+                    continue
+                raise e
 
-    if not httpd:
-        print(f"❌ Error: Could not bind to any port from {port} to {port + max_attempts - 1}.")
-        return
+        if not httpd:
+            print(f"❌ Error: Could not bind to any port from {port} to {port + max_attempts - 1}.")
+            return
+
+    print(f"✨ Tayyaba Organics Server running on port {active_port}")
+    print(f"🌿 Serving on http://{host}:{active_port}")
+    sys.stdout.flush()
 
     with httpd:
-        print(f"✨ Hair Care E-Commerce Server running at http://localhost:{active_port}")
-        print(f"🌿 Storefront: http://localhost:{active_port}")
-        print(f"⚙️ Admin Panel: http://localhost:{active_port}/admin")
-        print(f"🔑 Default Admin Credentials: Username: admin | Password: admin123")
         try:
             httpd.serve_forever()
         except KeyboardInterrupt:

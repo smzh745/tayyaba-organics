@@ -1,0 +1,136 @@
+/* Custom Modern Styling for AuraBotanica Hair Care Store */
+
+:root {
+  --primary: #1e3a2b; /* Deep Botanical Emerald */
+  --primary-light: #2d553e;
+  --primary-dark: #13271c;
+  --accent: #d4a373; /* Warm Amber Gold */
+  --accent-hover: #b58456;
+  --accent-light: #fefae0;
+  --bg-cream: #faf8f5;
+  --text-main: #2b2d42;
+  --text-muted: #6c757d;
+  --border-color: #e5e0d8;
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-cream);
+  color: var(--text-main);
+  scroll-behavior: smooth;
+}
+
+.font-serif-display {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+/* Glassmorphism navigation */
+.glass-nav {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(229, 224, 216, 0.7);
+}
+
+/* Gradient Hero Overlay */
+.hero-gradient {
+  background: linear-gradient(135deg, rgba(19, 39, 28, 0.92) 0%, rgba(30, 58, 43, 0.85) 60%, rgba(45, 85, 62, 0.75) 100%),
+              url('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&w=1800&q=80') center/cover no-repeat;
+}
+
+/* Smooth Card Hover */
+.product-card {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 30px -10px rgba(30, 58, 43, 0.12);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1ede6;
+}
+::-webkit-scrollbar-thumb {
+  background: #c5bcae;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a89d8d;
+}
+
+/* Toast Notifications */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  min-width: 300px;
+  max-width: 420px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.3s ease;
+}
+
+.toast-success {
+  background: #1e3a2b;
+  color: #ffffff;
+  border-left: 5px solid #52b788;
+}
+
+.toast-error {
+  background: #780000;
+  color: #ffffff;
+  border-left: 5px solid #ff4d4d;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+/* Drawer transitions */
+.cart-drawer-backdrop {
+  transition: opacity 0.3s ease;
+}
+
+.cart-drawer-content {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Subtle badge pulse */
+@keyframes pulse-subtle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.cart-badge-bounce {
+  animation: pulse-subtle 0.4s ease-in-out;
+}
+

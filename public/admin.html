@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tayyaba Organics | Admin Portal (Pakistan)</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            adminGreen: {
+              50: '#f0f7f3',
+              100: '#dceee3',
+              700: '#1b4d32',
+              800: '#133925',
+              900: '#0c2518'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body class="bg-slate-100 text-slate-800 antialiased min-h-screen">
+
+  <div id="toast-container"></div>
+
+  <!-- ======================== LOGIN OVERLAY ======================== -->
+  <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 border border-slate-200">
+      <div class="text-center mb-6">
+        <div class="w-14 h-14 rounded-2xl bg-adminGreen-800 text-amber-400 flex items-center justify-center text-2xl mx-auto mb-3 shadow-md">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <h2 class="font-serif-display text-2xl font-bold text-slate-900">Tayyaba Organics</h2>
+        <p class="text-xs text-slate-500 mt-1">Admin Portal &bull; Pakistan Operations</p>
+      </div>
+
+      <form id="admin-login-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Username</label>
+          <input type="text" id="login-username" value="admin" required
+                 class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Password</label>
+          <input type="password" id="login-password" value="admin123" required
+                 class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+        </div>
+
+        <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-amber-700"></i>
+          <span>Default credentials: <strong>admin</strong> / <strong>admin123</strong></span>
+        </div>
+
+        <button type="submit" id="login-btn" class="w-full py-3.5 bg-adminGreen-800 hover:bg-adminGreen-700 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2">
+          <i class="fa-solid fa-right-to-bracket"></i>
+          <span>Sign In to Dashboard</span>
+        </button>
+      </form>
+
+      <div class="mt-6 text-center">
+        <a href="/" class="text-xs text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1">
+          <i class="fa-solid fa-arrow-left"></i> Return to Storefront
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== MAIN ADMIN DASHBOARD ======================== -->
+  <div id="admin-dashboard-app" class="hidden min-h-screen flex flex-col">
+    
+    <!-- Top Admin Header -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          
+          <!-- Logo & Admin Title -->
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-adminGreen-800 text-amber-400 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-leaf"></i>
+            </div>
+            <div>
+              <span class="font-bold text-slate-900 text-base">Tayyaba Organics</span>
+              <span class="text-xs bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-semibold ml-2">Store Admin (Pakistan)</span>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-4">
+            <a href="/" target="_blank" class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              <span>View Storefront</span>
+            </a>
+
+            <div class="h-5 w-px bg-slate-200"></div>
+
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-semibold text-slate-600 hidden md:inline">Logged in as <strong id="admin-user-display" class="text-slate-900">admin</strong></span>
+              <button id="admin-logout-btn" class="p-2 text-slate-500 hover:text-rose-600 rounded-lg hover:bg-rose-50 transition-colors" title="Log Out">
+                <i class="fa-solid fa-arrow-right-from-bracket text-base"></i>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex space-x-6 border-t border-slate-100 text-xs sm:text-sm font-semibold overflow-x-auto">
+        <button data-tab="tab-dashboard" class="admin-tab-btn py-3 border-b-2 border-adminGreen-800 text-adminGreen-800 flex items-center gap-2">
+          <i class="fa-solid fa-chart-line"></i> Dashboard
+        </button>
+        <button data-tab="tab-products" class="admin-tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-pump-soap"></i> Products (<span id="tab-count-products">0</span>)
+        </button>
+        <button data-tab="tab-orders" class="admin-tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-box-open"></i> COD Orders (<span id="tab-count-orders">0</span>)
+        </button>
+        <button data-tab="tab-reviews" class="admin-tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-star"></i> Reviews (<span id="tab-count-reviews">0</span>)
+        </button>
+        <button data-tab="tab-inquiries" class="admin-tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-envelope"></i> Inquiries (<span id="tab-count-inquiries">0</span>)
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Content Body -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full">
+      
+      <!-- ==================== TAB 1: DASHBOARD OVERVIEW ==================== -->
+      <div id="tab-dashboard" class="tab-pane space-y-8">
+        
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Sales</p>
+              <h3 id="stat-revenue" class="text-2xl font-bold text-slate-900 mt-1">Rs. 0</h3>
+              <p class="text-[11px] text-emerald-600 font-semibold mt-1"><i class="fa-solid fa-circle-check"></i> From active COD orders</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-wallet"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Orders</p>
+              <h3 id="stat-orders" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+              <p class="text-[11px] text-slate-500 mt-1">Cash on Delivery across PK</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-cart-shopping"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Pending COD Orders</p>
+              <h3 id="stat-pending" class="text-2xl font-bold text-amber-600 mt-1">0</h3>
+              <p class="text-[11px] text-amber-700 font-semibold mt-1">Awaiting dispatch/call</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-truck-clock"></i>
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Catalog Inventory</p>
+              <h3 id="stat-products" class="text-2xl font-bold text-slate-900 mt-1">0</h3>
+              <p id="stat-low-stock" class="text-[11px] text-slate-500 mt-1">0 low in stock</p>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-pump-soap"></i>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Recent Orders & Fast Actions -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          <!-- Recent Orders Table -->
+          <div class="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+            <div class="flex items-center justify-between mb-5">
+              <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+                <i class="fa-solid fa-clock-rotate-left text-slate-400"></i> Recent Pakistan Orders
+              </h3>
+              <button onclick="switchTab('tab-orders')" class="text-xs font-bold text-adminGreen-800 hover:underline">
+                View All Orders &rarr;
+              </button>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-slate-100 text-slate-500 font-semibold">
+                    <th class="pb-3">Order ID</th>
+                    <th class="pb-3">Customer</th>
+                    <th class="pb-3">City</th>
+                    <th class="pb-3">Amount</th>
+                    <th class="pb-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-recent-orders-tbody" class="divide-y divide-slate-100 text-slate-700">
+                  <!-- Injected via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Quick Shortcuts & Product Upload Promotion -->
+          <div class="bg-gradient-to-br from-adminGreen-900 to-adminGreen-800 text-white rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+            <div>
+              <div class="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center text-amber-400 text-2xl mb-4">
+                <i class="fa-solid fa-plus"></i>
+              </div>
+              <h3 class="font-serif-display text-xl font-bold mb-2">Upload New Product</h3>
+              <p class="text-xs text-slate-200 leading-relaxed mb-6">
+                Add your own hair oils, herbal shampoos, or bundles in Pakistani Rupees (PKR) with ingredients, images, and inventory stock.
+              </p>
+            </div>
+            
+            <button onclick="openAddProductModal()" class="w-full py-3 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs transition-colors flex items-center justify-center gap-2 shadow">
+              <i class="fa-solid fa-circle-plus"></i> Add Product Now
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ==================== TAB 2: PRODUCT MANAGEMENT ==================== -->
+      <div id="tab-products" class="tab-pane hidden space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200">
+          <div>
+            <h3 class="font-serif-display text-xl font-bold text-slate-900">Tayyaba Organics Product Management</h3>
+            <p class="text-xs text-slate-500">Upload new products, modify prices in PKR, update stock, and edit descriptions.</p>
+          </div>
+          
+          <button onclick="openAddProductModal()" class="px-5 py-2.5 bg-adminGreen-800 hover:bg-adminGreen-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center gap-2">
+            <i class="fa-solid fa-plus"></i>
+            <span>Add New Product</span>
+          </button>
+        </div>
+
+        <!-- Products Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
+                <tr>
+                  <th class="p-4">Product</th>
+                  <th class="p-4">Category</th>
+                  <th class="p-4">Price (PKR)</th>
+                  <th class="p-4">Stock</th>
+                  <th class="p-4">Rating</th>
+                  <th class="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-products-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== TAB 3: ORDER MANAGEMENT ==================== -->
+      <div id="tab-orders" class="tab-pane hidden space-y-6">
+        
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200">
+          <div>
+            <h3 class="font-serif-display text-xl font-bold text-slate-900">Pakistan Cash on Delivery (COD) Orders</h3>
+            <p class="text-xs text-slate-500">Track and fulfill customer orders across Pakistan. Contact customers via WhatsApp or Phone to confirm dispatch.</p>
+          </div>
+
+          <!-- Filter by Status -->
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-500 font-semibold">Filter:</label>
+            <select id="order-status-filter" class="text-xs font-semibold bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-slate-700">
+              <option value="all">All Orders</option>
+              <option value="Pending">Pending Confirmation</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Shipped">Shipped / With Courier</option>
+              <option value="Delivered">Delivered (Cash Collected)</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Orders Table -->
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
+                <tr>
+                  <th class="p-4">Order #</th>
+                  <th class="p-4">Customer Details</th>
+                  <th class="p-4">Delivery Address & City</th>
+                  <th class="p-4">Items Ordered</th>
+                  <th class="p-4">COD Total (PKR)</th>
+                  <th class="p-4">Courier Status</th>
+                  <th class="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-orders-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== TAB 4: REVIEWS MANAGEMENT ==================== -->
+      <div id="tab-reviews" class="tab-pane hidden space-y-6">
+        
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <h3 class="font-serif-display text-xl font-bold text-slate-900">Customer Testimonials & Reviews</h3>
+          <p class="text-xs text-slate-500">Manage user reviews published on the website.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
+                <tr>
+                  <th class="p-4">Customer</th>
+                  <th class="p-4">Rating</th>
+                  <th class="p-4">Review</th>
+                  <th class="p-4">Date</th>
+                  <th class="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-reviews-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ==================== TAB 5: CONTACT INQUIRIES ==================== -->
+      <div id="tab-inquiries" class="tab-pane hidden space-y-6">
+        
+        <div class="bg-white p-5 rounded-2xl border border-slate-200">
+          <h3 class="font-serif-display text-xl font-bold text-slate-900">Contact Form Inquiries</h3>
+          <p class="text-xs text-slate-500">Messages sent by customers from the website's contact section.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-bold">
+                <tr>
+                  <th class="p-4">Sender</th>
+                  <th class="p-4">Contact Info</th>
+                  <th class="p-4">Subject & Message</th>
+                  <th class="p-4">Date</th>
+                  <th class="p-4">Status</th>
+                  <th class="p-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-inquiries-table-body" class="divide-y divide-slate-100">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ======================== ADD / EDIT PRODUCT MODAL ======================== -->
+  <div id="product-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
+    <div class="min-h-screen px-4 flex items-center justify-center p-4">
+      <div id="product-modal-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+
+      <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 relative z-10 border border-slate-200 my-8">
+        
+        <div class="flex items-center justify-between pb-4 border-b border-slate-200 mb-6">
+          <div>
+            <h3 id="product-modal-title" class="font-serif-display text-2xl font-bold text-slate-900">Add New Hair Product</h3>
+            <p class="text-xs text-slate-500">Enter product information, PKR pricing, and hair benefits</p>
+          </div>
+          <button onclick="closeProductModal()" class="text-slate-400 hover:text-slate-600 p-1">
+            <i class="fa-solid fa-xmark text-xl"></i>
+          </button>
+        </div>
+
+        <form id="product-form" class="space-y-4">
+          <input type="hidden" id="prod-id" value="">
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="sm:col-span-2">
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Product Name *</label>
+              <input type="text" id="prod-name" required placeholder="e.g. Tayyaba Organics Rosemary Scalp Oil"
+                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Category *</label>
+              <select id="prod-category" class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+                <option value="Hair Oil">Hair Oil</option>
+                <option value="Shampoo">Shampoo</option>
+                <option value="Conditioner">Conditioner</option>
+                <option value="Hair Mask">Hair Mask</option>
+                <option value="Serum">Serum</option>
+                <option value="Bundles">Value Bundles</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Sale Price (PKR / Rs.) *</label>
+              <input type="number" step="1" id="prod-price" required placeholder="1450"
+                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Original Price (Rs.)</label>
+              <input type="number" step="1" id="prod-orig-price" placeholder="1950"
+                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Stock Quantity</label>
+              <input type="number" id="prod-stock" value="50" min="0"
+                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+            </div>
+          </div>
+
+          <!-- Product Image & Upload Support -->
+          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-3">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Product Image</label>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div class="sm:col-span-2">
+                <input type="text" id="prod-image-url" placeholder="Paste image URL (e.g. Unsplash URL)"
+                       class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-1 focus:ring-adminGreen-800">
+              </div>
+              <div>
+                <label class="cursor-pointer flex items-center justify-center gap-1.5 px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100">
+                  <i class="fa-solid fa-cloud-arrow-up text-adminGreen-800"></i>
+                  <span>Upload Image</span>
+                  <input type="file" id="prod-image-file" accept="image/*" class="hidden">
+                </label>
+              </div>
+            </div>
+
+            <div id="image-preview-container" class="flex items-center gap-3">
+              <img id="prod-image-preview" src="https://images.unsplash.com/photo-1608248597359-009139265f24?auto=format&fit=crop&w=800&q=80" 
+                   class="w-16 h-16 object-cover rounded-xl border border-slate-200 bg-white">
+              <span class="text-[11px] text-slate-500">Live Image Preview</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Badge Tag</label>
+              <input type="text" id="prod-badge" placeholder="e.g. Best Seller, Save 25%, Sulfate Free"
+                     class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+            </div>
+
+            <div class="flex items-center pt-6">
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="prod-featured" checked class="w-4 h-4 text-adminGreen-800 rounded focus:ring-adminGreen-800 border-slate-300">
+                <span class="ml-2 text-xs font-bold text-slate-700">Display in Featured Section</span>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Detailed Description</label>
+            <textarea id="prod-desc" rows="3" placeholder="Explain what the product is and why customers will love it..."
+                      class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800"></textarea>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Key Ingredients</label>
+              <input type="text" id="prod-ingredients" placeholder="Rosemary Oil, Kalonji (Black Seed), Biotin, Castor Oil"
+                     class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Key Benefits</label>
+              <input type="text" id="prod-benefits" placeholder="Stops severe hair fall, stimulates baby hair growth"
+                     class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">How To Use Instructions</label>
+            <input type="text" id="prod-how-to-use" placeholder="Apply 4-6 drops to scalp roots and massage 5 minutes..."
+                   class="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-adminGreen-800">
+          </div>
+
+          <div class="pt-4 border-t border-slate-200 flex justify-end gap-3">
+            <button type="button" onclick="closeProductModal()" class="px-5 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors">
+              Cancel
+            </button>
+            <button type="submit" id="save-product-btn" class="px-6 py-2.5 bg-adminGreen-800 hover:bg-adminGreen-700 text-white font-bold text-xs rounded-xl shadow-md transition-all">
+              Save Product
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic for Admin -->
+  <script src="/js/admin.js"></script>
+</body>
+</html>

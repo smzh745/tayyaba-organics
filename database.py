@@ -190,5 +190,61 @@ def seed_tayyaba_organics_data(cursor):
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, sample_products)
 
+    sample_reviews = [
+        (
+            1,
+            "Fatima Zahra (Lahore)",
+            5,
+            "Hair fall visibly stopped in 3 weeks!",
+            "I ordered through their Instagram page @organicstayyaba after seeing positive feedback. The nourishing hair oil is lightweight, doesn't feel sticky, and my hair fall reduced significantly within 3 weeks. Fast Cash on Delivery in Lahore!",
+            1
+        ),
+        (
+            2,
+            "Ayesha Siddiqui (Karachi)",
+            5,
+            "Best handmade sulfate-free cleanser",
+            "Most sulfate-free shampoos in Pakistan make hair super dry, but Tayyaba Organic's Hair Cleanser leaves hair soft and completely frizz-free even in Karachi's humid weather. Truly pure by nature.",
+            1
+        ),
+        (
+            3,
+            "Maryam Tariq (Islamabad)",
+            5,
+            "Transformed my dry hair texture",
+            "Due to hard water in Islamabad, my hair was rough and brittle. Used this herbal hair mask once a week and the texture is velvety soft and shiny. Highly recommended!",
+            1
+        ),
+        (
+            1,
+            "Zainab Bilal (Faisalabad)",
+            5,
+            "Smells natural and works wonders",
+            "100% pure herbal aroma with zero artificial chemicals. Baby hairs started sprouting along my hairline. Delivery rider took cash at doorstep without any hassle.",
+            1
+        ),
+        (
+            2,
+            "Mahnoor Khan (Rawalpindi)",
+            5,
+            "Gentle daily hair cleanser",
+            "Gentle on sensitive scalp, creates a rich natural lather without harsh SLS. Pair it with their nourishing oil for best results!",
+            1
+        ),
+        (
+            3,
+            "Sana Sheikh (Multan)",
+            5,
+            "Salon treatment at home",
+            "Deeply conditioned my damaged hair from heat styling. No more frizzy tangled ends. Tayyaba Organic is genuinely authentic.",
+            1
+        )
+    ]
+
+    cursor.executemany("""
+    INSERT INTO reviews (product_id, customer_name, rating, title, comment, verified)
+    VALUES (?, ?, ?, ?, ?, ?)
+    """, sample_reviews)
+
 if __name__ == "__main__":
     init_db(force_reseed=True)

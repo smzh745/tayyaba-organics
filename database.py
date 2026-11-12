@@ -19,6 +19,33 @@ def get_db():
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode("utf-8")).hexdigest()
 
+def get_all_settings(conn=None):
+    close_conn = False
+    if conn is None:
+        conn = get_db()
+        close_conn = True
+    
+    rows = conn.execute("SELECT key, value FROM settings").fetchall()
+    settings = {}
+    for r in rows:
+        settings[r["key"]] = r["value"]
+    
+    if close_conn:
+        conn.close()
+    return settings
+
+def update_setting(key, value, conn=None):
+    close_conn = False
+    if conn is None:
+        conn = get_db()
+        close_conn = True
+        
+    conn.execute("INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)", (key, str(value)))
+    conn.commit()
+    
+    if close_conn:
+        conn.close()
+
 def init_db(force_reseed=False):
     conn = get_db()
     cursor = conn.cursor()
@@ -113,6 +140,26 @@ def init_db(force_reseed=False):
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
     """)
+
+    # Settings Table (Dynamic delivery fee, free delivery threshold, announcement message)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+    )
+    """)
+
+    default_settings = {
+        "standard_delivery_fee": "200",
+        "free_shipping_threshold": "2000",
+        "announcement_message": "🌿 Tayyaba Organic &bull; Pure By Nature &bull; Free Delivery in Pakistan on orders above Rs. 2,000!",
+        "whatsapp_number": "923001234567"
+    }
+
+    for k, v in default_settings.items():
+        exists = cursor.execute("SELECT key FROM settings WHERE key = ?", (k,)).fetchone()
+        if not exists:
+            cursor.execute("INSERT INTO settings (key, value) VALUES (?, ?)", (k, v))
 
     # Default admin credentials: admin / admin123
     admin_exists = cursor.execute("SELECT id FROM admins WHERE username = 'admin'").fetchone()

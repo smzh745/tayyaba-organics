@@ -18,7 +18,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-from database import get_db, hash_password, init_db
+from database import get_db, hash_password, init_db, get_all_settings, update_setting
 
 PUBLIC_DIR = os.path.join(BASE_DIR, "public")
 UPLOAD_DIR = os.path.join(PUBLIC_DIR, "uploads")
@@ -175,6 +175,12 @@ def application(environ, start_response):
             conn.close()
             return send_json({"success": True, "inquiries": inquiries})
 
+        # GET /api/settings
+        if path == "/api/settings" and method == "GET":
+            settings = get_all_settings(conn)
+            conn.close()
+            return send_json({"success": True, "settings": settings})
+
         # POST /api/orders (Cash on Delivery)
         if path == "/api/orders" and method == "POST":
             body = parse_body()
@@ -203,10 +209,20 @@ def application(environ, start_response):
                 price = float(itm.get("price", 0))
                 subtotal += qty * price
 
-            delivery_fee = 0.0 if subtotal >= 2500.0 else 200.0
+            settings = get_all_settings(conn)
+            try:
+                free_threshold = float(settings.get("free_shipping_threshold", 2000.0))
+            except (ValueError, TypeError):
+                free_threshold = 2000.0
+            try:
+                standard_fee = float(settings.get("standard_delivery_fee", 200.0))
+            except (ValueError, TypeError):
+                standard_fee = 200.0
+
+            delivery_fee = 0.0 if subtotal >= free_threshold else standard_fee
             total_amount = round(subtotal + delivery_fee, 2)
             subtotal = round(subtotal, 2)
-            order_num = f"ORD-{int(time.time() % 100000):05d}"
+            order_num = f"ORD-{int(time.time() % 100000):05d}-{uuid.uuid4().hex[:4].upper()}"
 
             cursor.execute("""
             INSERT INTO orders (
@@ -221,11 +237,15 @@ def application(environ, start_response):
 
             return send_json({
                 "success": True,
+                "message": "Order placed successfully! Pay cash when your package is delivered.",
                 "order": {
                     "id": order_id,
                     "order_number": order_num,
                     "customer_name": name,
                     "total_amount": total_amount,
+                    "subtotal": subtotal,
+                    "delivery_fee": delivery_fee,
+                    "payment_method": "Cash on Delivery (COD)",
                     "status": "Pending"
                 }
             })
@@ -354,6 +374,23 @@ def application(environ, start_response):
                 f.write(decoded)
             conn.close()
             return send_json({"success": True, "url": f"/uploads/{unique_name}"})
+
+        # POST /api/admin/settings or /api/settings
+        if path in ("/api/admin/settings", "/api/settings") and method == "POST":
+            body = parse_body()
+            if not body:
+                conn.close()
+                return send_error("Invalid settings data")
+            for key in ["standard_delivery_fee", "free_shipping_threshold", "announcement_message", "whatsapp_number"]:
+                if key in body and body[key] is not None:
+                    update_setting(key, str(body[key]).strip(), conn)
+            settings = get_all_settings(conn)
+            conn.close()
+            return send_json({
+                "success": True,
+                "message": "Store delivery settings updated successfully!",
+                "settings": settings
+            })
 
         conn.close()
         return send_error("Endpoint not found", status="404 Not Found")

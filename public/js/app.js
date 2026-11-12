@@ -8,9 +8,50 @@
 let allProducts = [];
 let cart = [];
 
-// Free Delivery threshold & standard courier fee in Pakistan
-const FREE_SHIPPING_THRESHOLD = 2500.0;
-const STANDARD_DELIVERY_FEE = 200.0;
+// Dynamic Free Delivery threshold & standard courier fee in Pakistan
+let FREE_SHIPPING_THRESHOLD = 2000.0;
+let STANDARD_DELIVERY_FEE = 200.0;
+let STORE_SETTINGS = {
+  standard_delivery_fee: '200',
+  free_shipping_threshold: '2000',
+  announcement_message: '🌿 Tayyaba Organic &bull; Pure By Nature &bull; Free Delivery in Pakistan on orders above Rs. 2,000!',
+  whatsapp_number: '923001234567'
+};
+
+async function fetchSettings() {
+  try {
+    const res = await fetch('/api/settings');
+    const data = await res.json();
+    if (data.success && data.settings) {
+      STORE_SETTINGS = data.settings;
+      if (data.settings.free_shipping_threshold !== undefined) {
+        const parsed = parseFloat(data.settings.free_shipping_threshold);
+        if (!isNaN(parsed)) FREE_SHIPPING_THRESHOLD = parsed;
+      }
+      if (data.settings.standard_delivery_fee !== undefined) {
+        const parsed = parseFloat(data.settings.standard_delivery_fee);
+        if (!isNaN(parsed)) STANDARD_DELIVERY_FEE = parsed;
+      }
+
+      // Update announcement bar text
+      const announcementBar = document.getElementById('store-announcement-bar');
+      if (announcementBar && data.settings.announcement_message) {
+        announcementBar.innerHTML = data.settings.announcement_message;
+      }
+
+      // Update free shipping goal in cart drawer
+      const goalEl = document.getElementById('free-shipping-goal');
+      if (goalEl) {
+        goalEl.textContent = `${formatPKR(FREE_SHIPPING_THRESHOLD)} Goal`;
+      }
+
+      // Refresh cart display if cart has items
+      updateCartUI();
+    }
+  } catch (err) {
+    console.warn('Could not load dynamic settings, using defaults:', err);
+  }
+}
 
 // DOM Elements Cache
 const productsGrid = document.getElementById('products-grid');
@@ -564,9 +605,11 @@ async function handleCodOrderSubmit(e) {
       // Pre-fill instant WhatsApp notification to store owner
       const waBtn = document.getElementById('success-whatsapp-btn');
       if (waBtn) {
+        const rawPhone = (STORE_SETTINGS && STORE_SETTINGS.whatsapp_number) ? STORE_SETTINGS.whatsapp_number : '923001234567';
+        const cleanPhone = rawPhone.replace(/\D/g, '') || '923001234567';
         const itemsSummary = (payload.items || []).map(i => `• ${i.quantity}x ${i.name} (${formatPKR(i.price)})`).join('\n');
         const waMsg = `Salam Tayyaba Organic! 🌿\nI have placed a Cash on Delivery order on your website:\n\n*Order #:* ${data.order.order_number}\n*Name:* ${data.order.customer_name}\n*Phone:* ${data.order.customer_phone}\n*City:* ${data.order.city}\n*Address:* ${data.order.shipping_address}\n*Total Payable:* ${formatPKR(data.order.total_amount)} (Cash on Delivery)\n\n*Ordered Items:*\n${itemsSummary}\n\nPlease confirm my dispatch!`;
-        waBtn.href = `https://wa.me/923001234567?text=${encodeURIComponent(waMsg)}`;
+        waBtn.href = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(waMsg)}`;
       }
 
       checkoutFormContainer.classList.add('hidden');
@@ -590,6 +633,7 @@ async function handleCodOrderSubmit(e) {
 // EVENT LISTENERS INITIALIZATION
 // -------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
+  fetchSettings();
   loadCartFromStorage();
   fetchProducts();
   fetchReviews();

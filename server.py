@@ -15,7 +15,7 @@ import hashlib
 import uuid
 import base64
 import time
-from database import get_db, hash_password, init_db
+from database import get_db, hash_password, init_db, get_all_settings, update_setting
 
 PORT = int(os.environ.get("PORT", 8080))
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -245,6 +245,12 @@ class HairCareStoreHandler(http.server.BaseHTTPRequestHandler):
                 }
             })
 
+        # GET /api/settings
+        if path == "/api/settings":
+            settings = get_all_settings(conn)
+            conn.close()
+            return self.send_json({"success": True, "settings": settings})
+
         conn.close()
         return self.send_error_json("Endpoint not found", 404)
 
@@ -379,12 +385,22 @@ class HairCareStoreHandler(http.server.BaseHTTPRequestHandler):
                 if pid:
                     cursor.execute("UPDATE products SET stock = MAX(0, stock - ?) WHERE id = ?", (qty, pid))
 
-            # Free Cash on Delivery across Pakistan for orders >= Rs. 2500, otherwise Rs. 200 standard shipping
-            delivery_fee = 0.0 if subtotal >= 2500.0 else 200.00
+            # Dynamic Free Delivery threshold & standard shipping fee across Pakistan
+            settings = get_all_settings(conn)
+            try:
+                free_threshold = float(settings.get("free_shipping_threshold", 2000.0))
+            except (ValueError, TypeError):
+                free_threshold = 2000.0
+            try:
+                standard_fee = float(settings.get("standard_delivery_fee", 200.0))
+            except (ValueError, TypeError):
+                standard_fee = 200.0
+
+            delivery_fee = 0.0 if subtotal >= free_threshold else standard_fee
             total_amount = round(subtotal + delivery_fee, 2)
             subtotal = round(subtotal, 2)
 
-            order_num = f"ORD-{int(time.time() % 100000):05d}"
+            order_num = f"ORD-{int(time.time() % 100000):05d}-{uuid.uuid4().hex[:4].upper()}"
 
             cursor.execute("""
             INSERT INTO orders (
@@ -467,6 +483,20 @@ class HairCareStoreHandler(http.server.BaseHTTPRequestHandler):
             conn.commit()
             conn.close()
             return self.send_json({"success": True, "message": "Your message has been sent! Our team will get back to you shortly."})
+
+        # Update Store Settings (Delivery Fee, Threshold, Announcement, WhatsApp)
+        if path in ("/api/admin/settings", "/api/settings"):
+            setting_keys = ["standard_delivery_fee", "free_shipping_threshold", "announcement_message", "whatsapp_number"]
+            for key in setting_keys:
+                if key in body and body[key] is not None:
+                    update_setting(key, str(body[key]).strip(), conn)
+            settings = get_all_settings(conn)
+            conn.close()
+            return self.send_json({
+                "success": True,
+                "message": "Store delivery settings updated successfully!",
+                "settings": settings
+            })
 
         conn.close()
         return self.send_error_json("Endpoint not found", 404)

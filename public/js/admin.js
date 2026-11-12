@@ -126,6 +126,7 @@ function switchTab(tabId) {
   if (tabId === 'tab-orders') loadOrders();
   if (tabId === 'tab-reviews') loadReviews();
   if (tabId === 'tab-inquiries') loadInquiries();
+  if (tabId === 'tab-settings') loadSettings();
   if (tabId === 'tab-dashboard') loadStats();
 }
 
@@ -138,7 +139,8 @@ async function loadAllDashboardData() {
     loadProducts(),
     loadOrders(),
     loadReviews(),
-    loadInquiries()
+    loadInquiries(),
+    loadSettings()
   ]);
 }
 
@@ -723,6 +725,91 @@ async function updateInquiryStatus(id, newStatus) {
 }
 
 // -------------------------------------------------------------
+// STORE SETTINGS (DELIVERY FEE, FREE SHIPPING THRESHOLD, ANNOUNCEMENT)
+// -------------------------------------------------------------
+async function loadSettings() {
+  try {
+    const res = await fetch('/api/settings');
+    const data = await res.json();
+    if (data.success && data.settings) {
+      const s = data.settings;
+      const feeInput = document.getElementById('setting-standard-fee');
+      const threshInput = document.getElementById('setting-threshold');
+      const announceInput = document.getElementById('setting-announcement');
+      const waInput = document.getElementById('setting-whatsapp');
+
+      if (feeInput && s.standard_delivery_fee !== undefined) feeInput.value = s.standard_delivery_fee;
+      if (threshInput && s.free_shipping_threshold !== undefined) threshInput.value = s.free_shipping_threshold;
+      if (announceInput && s.announcement_message !== undefined) announceInput.value = s.announcement_message;
+      if (waInput && s.whatsapp_number !== undefined) waInput.value = s.whatsapp_number;
+
+      updateSettingsLivePreview();
+    }
+  } catch (err) {
+    console.error('Failed to load settings:', err);
+    showToast('Failed to load store settings', 'error');
+  }
+}
+
+function updateSettingsLivePreview() {
+  const announceInput = document.getElementById('setting-announcement');
+  const threshInput = document.getElementById('setting-threshold');
+  const feeInput = document.getElementById('setting-standard-fee');
+
+  const previewBox = document.getElementById('preview-announcement-box');
+  const previewThresh = document.getElementById('preview-threshold-text');
+  const previewFee = document.getElementById('preview-fee-text');
+
+  if (previewBox && announceInput) {
+    previewBox.innerHTML = announceInput.value || '🌿 Tayyaba Organic • Pure By Nature • Free Delivery in Pakistan on orders above Rs. 2,000!';
+  }
+  if (previewThresh && threshInput) {
+    previewThresh.textContent = formatPKR(parseFloat(threshInput.value) || 2000);
+  }
+  if (previewFee && feeInput) {
+    previewFee.textContent = formatPKR(parseFloat(feeInput.value) || 200);
+  }
+}
+
+async function handleSettingsSubmit(e) {
+  e.preventDefault();
+  const btn = document.getElementById('save-settings-btn');
+  btn.disabled = true;
+  btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Saving Settings...`;
+
+  const payload = {
+    standard_delivery_fee: document.getElementById('setting-standard-fee').value.trim(),
+    free_shipping_threshold: document.getElementById('setting-threshold').value.trim(),
+    announcement_message: document.getElementById('setting-announcement').value.trim(),
+    whatsapp_number: document.getElementById('setting-whatsapp').value.trim()
+  };
+
+  try {
+    const res = await fetch('/api/admin/settings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${authToken}`
+      },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      showToast('✅ Delivery and announcement settings saved successfully!');
+      updateSettingsLivePreview();
+    } else {
+      showToast(data.error || 'Failed to update settings', 'error');
+    }
+  } catch (err) {
+    console.error('Failed to save settings:', err);
+    showToast('Network error while saving settings', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> <span>Save Store Settings</span>`;
+  }
+}
+
+// -------------------------------------------------------------
 // INITIALIZATION
 // -------------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
@@ -743,6 +830,25 @@ document.addEventListener('DOMContentLoaded', () => {
   productForm.addEventListener('submit', handleProductSubmit);
   setupImageUpload();
 
+  // Store Settings Form & Listeners
+  const settingsForm = document.getElementById('admin-settings-form');
+  if (settingsForm) {
+    settingsForm.addEventListener('submit', handleSettingsSubmit);
+  }
+  const refreshSettingsBtn = document.getElementById('refresh-settings-btn');
+  if (refreshSettingsBtn) {
+    refreshSettingsBtn.addEventListener('click', () => {
+      loadSettings();
+      showToast('Settings reloaded from database');
+    });
+  }
+  ['setting-announcement', 'setting-threshold', 'setting-standard-fee'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('input', updateSettingsLivePreview);
+    }
+  });
+
   // Order filter
   document.getElementById('order-status-filter').addEventListener('change', () => {
     loadOrders();
@@ -758,7 +864,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Poll for new incoming orders every 15 seconds while dashboard is open
   setInterval(() => {
-    if (localStorage.getItem('admin_token')) {
+    if (authToken || localStorage.getItem('tayyaba_organics_admin_token')) {
       loadStats();
     }
   }, 15000);

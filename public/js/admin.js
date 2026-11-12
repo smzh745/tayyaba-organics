@@ -707,4 +707,70 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Close modals on backdrop click
   document.getElementById('product-modal-backdrop').addEventListener('click', closeProductModal);
+
+  // Change Password Modal handlers
+  const cpModal = document.getElementById('change-password-modal');
+  const openCpBtn = document.getElementById('open-change-password-btn');
+  const closeCpBtn = document.getElementById('close-change-password-btn');
+  const cpForm = document.getElementById('change-password-form');
+
+  if (openCpBtn && cpModal) {
+    openCpBtn.addEventListener('click', () => {
+      cpModal.classList.remove('hidden');
+      cpForm.reset();
+    });
+  }
+
+  if (closeCpBtn && cpModal) {
+    closeCpBtn.addEventListener('click', () => {
+      cpModal.classList.add('hidden');
+    });
+  }
+
+  if (cpForm) {
+    cpForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const currentPw = document.getElementById('cp-current-password').value;
+      const newPw = document.getElementById('cp-new-password').value;
+      const confirmPw = document.getElementById('cp-confirm-password').value;
+
+      if (newPw !== confirmPw) {
+        showToast('New passwords do not match!', 'error');
+        return;
+      }
+
+      if (newPw.length < 4) {
+        showToast('New password must be at least 4 characters!', 'error');
+        return;
+      }
+
+      const submitBtn = document.getElementById('cp-submit-btn');
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Updating...`;
+
+      try {
+        const res = await fetch('/api/admin/change-password', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            current_password: currentPw,
+            new_password: newPw
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✅ Password changed successfully!');
+          cpModal.classList.add('hidden');
+          cpForm.reset();
+        } else {
+          showToast(data.error || 'Failed to change password', 'error');
+        }
+      } catch (err) {
+        showToast('Network error while updating password', 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = `<i class="fa-solid fa-lock"></i> <span>Update Password</span>`;
+      }
+    });
+  }
 });

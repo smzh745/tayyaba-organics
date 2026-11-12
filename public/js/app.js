@@ -561,6 +561,14 @@ async function handleCodOrderSubmit(e) {
       const totalEl = document.getElementById('success-order-total');
       if (totalEl) totalEl.textContent = formatPKR(data.order.total_amount);
 
+      // Pre-fill instant WhatsApp notification to store owner
+      const waBtn = document.getElementById('success-whatsapp-btn');
+      if (waBtn) {
+        const itemsSummary = (payload.items || []).map(i => `• ${i.quantity}x ${i.name} (${formatPKR(i.price)})`).join('\n');
+        const waMsg = `Salam Tayyaba Organic! 🌿\nI have placed a Cash on Delivery order on your website:\n\n*Order #:* ${data.order.order_number}\n*Name:* ${data.order.customer_name}\n*Phone:* ${data.order.customer_phone}\n*City:* ${data.order.city}\n*Address:* ${data.order.shipping_address}\n*Total Payable:* ${formatPKR(data.order.total_amount)} (Cash on Delivery)\n\n*Ordered Items:*\n${itemsSummary}\n\nPlease confirm my dispatch!`;
+        waBtn.href = `https://wa.me/923001234567?text=${encodeURIComponent(waMsg)}`;
+      }
+
       checkoutFormContainer.classList.add('hidden');
       checkoutSuccessContainer.classList.remove('hidden');
       showToast('🎉 Order placed successfully with Cash on Delivery!');

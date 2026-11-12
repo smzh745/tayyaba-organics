@@ -293,40 +293,6 @@ def application(environ, start_response):
             conn.close()
             return send_error("Invalid username or password", status="401 Unauthorized")
 
-        # POST /api/admin/change-password
-        if path == "/api/admin/change-password" and method == "POST":
-            body = parse_body()
-            current_password = body.get("current_password", "").strip()
-            new_password = body.get("new_password", "").strip()
-
-            if not current_password or not new_password:
-                conn.close()
-                return send_error("Current and new passwords are required")
-
-            if len(new_password) < 4:
-                conn.close()
-                return send_error("New password must be at least 4 characters")
-
-            curr_hash = hash_password(current_password)
-            admin = cursor.execute("SELECT * FROM admins WHERE username = 'admin'").fetchone()
-
-            if admin:
-                if admin["password_hash"] != curr_hash:
-                    conn.close()
-                    return send_error("Current password is incorrect")
-                new_hash = hash_password(new_password)
-                cursor.execute("UPDATE admins SET password_hash = ? WHERE username = 'admin'", (new_hash,))
-            else:
-                if current_password != "admin123":
-                    conn.close()
-                    return send_error("Current password is incorrect")
-                new_hash = hash_password(new_password)
-                cursor.execute("INSERT INTO admins (username, password_hash) VALUES ('admin', ?)", (new_hash,))
-
-            conn.commit()
-            conn.close()
-            return send_json({"success": True, "message": "Admin password changed successfully!"})
-
         # PUT /api/orders/<id>/status
         if path.startswith("/api/orders/") and path.endswith("/status") and method == "PUT":
             body = parse_body()

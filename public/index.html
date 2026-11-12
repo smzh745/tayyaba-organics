@@ -519,7 +519,7 @@
           <h3 class="font-serif-display font-bold text-2xl text-slate-900 mb-1">Order Confirmed!</h3>
           <p class="text-xs text-slate-500 mb-4">Shukriya! Your order has been placed with Cash on Delivery.</p>
 
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-left max-w-sm mx-auto mb-6 space-y-1.5">
+          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-left max-w-sm mx-auto mb-4 space-y-1.5">
             <span id="success-customer-name" class="hidden"></span>
             <div class="flex justify-between">
               <span class="text-slate-500">Order Number:</span>
@@ -534,6 +534,14 @@
               <span class="text-emerald-700 font-bold">Cash on Delivery</span>
             </div>
           </div>
+
+          <!-- Direct WhatsApp Confirmation to Store Owner -->
+          <a id="success-whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer" 
+             class="w-full py-3 px-4 mb-2 bg-[#25D366] hover:bg-[#20ba59] text-white font-bold rounded-xl text-xs shadow-md transition-all flex items-center justify-center gap-2">
+            <i class="fa-brands fa-whatsapp text-lg"></i>
+            <span>Send Order Confirmation on WhatsApp</span>
+          </a>
+          <p class="text-[11px] text-slate-500 mb-5">Click above to send your order receipt directly to our WhatsApp for speedy dispatch!</p>
 
           <button id="success-continue-btn" class="px-6 py-2.5 bg-botanical-800 text-white font-bold rounded-full text-xs hover:bg-botanical-700 transition-all">
             Continue Shopping

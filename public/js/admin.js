@@ -142,12 +142,55 @@ async function loadAllDashboardData() {
   ]);
 }
 
+// -------------------------------------------------------------
+// AUDIO CHIME & NOTIFICATIONS
+// -------------------------------------------------------------
+let lastKnownOrdersCount = null;
+
+function playOrderChime() {
+  try {
+    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+    osc.frequency.setValueAtTime(880, ctx.currentTime + 0.15); // A5
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.6);
+  } catch (e) {
+    // Handled silently
+  }
+}
+
 async function loadStats() {
   try {
     const res = await fetch('/api/admin/stats');
     const data = await res.json();
     if (data.success) {
       const stats = data.stats;
+
+      // Detect newly arrived orders
+      if (lastKnownOrdersCount !== null && stats.total_orders > lastKnownOrdersCount) {
+        const diff = stats.total_orders - lastKnownOrdersCount;
+        playOrderChime();
+        showToast(`🔔 ${diff} New COD Order(s) Received! Total Orders: ${stats.total_orders}`, 'success');
+
+        if ('Notification' in window && Notification.permission === 'granted') {
+          try {
+            new Notification('🔔 Tayyaba Organic — New Order Received!', {
+              body: `You received ${diff} new Cash on Delivery order(s). Check your dashboard for customer details.`
+            });
+          } catch (e) {}
+        }
+      }
+      lastKnownOrdersCount = stats.total_orders;
+
       document.getElementById('stat-revenue').textContent = formatPKR(stats.total_revenue);
       document.getElementById('stat-orders').textContent = stats.total_orders;
       document.getElementById('stat-pending').textContent = stats.pending_orders;
@@ -708,69 +751,15 @@ document.addEventListener('DOMContentLoaded', () => {
   // Close modals on backdrop click
   document.getElementById('product-modal-backdrop').addEventListener('click', closeProductModal);
 
-  // Change Password Modal handlers
-  const cpModal = document.getElementById('change-password-modal');
-  const openCpBtn = document.getElementById('open-change-password-btn');
-  const closeCpBtn = document.getElementById('close-change-password-btn');
-  const cpForm = document.getElementById('change-password-form');
-
-  if (openCpBtn && cpModal) {
-    openCpBtn.addEventListener('click', () => {
-      cpModal.classList.remove('hidden');
-      cpForm.reset();
-    });
+  // Request browser notification permission for orders
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
   }
 
-  if (closeCpBtn && cpModal) {
-    closeCpBtn.addEventListener('click', () => {
-      cpModal.classList.add('hidden');
-    });
-  }
-
-  if (cpForm) {
-    cpForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const currentPw = document.getElementById('cp-current-password').value;
-      const newPw = document.getElementById('cp-new-password').value;
-      const confirmPw = document.getElementById('cp-confirm-password').value;
-
-      if (newPw !== confirmPw) {
-        showToast('New passwords do not match!', 'error');
-        return;
-      }
-
-      if (newPw.length < 4) {
-        showToast('New password must be at least 4 characters!', 'error');
-        return;
-      }
-
-      const submitBtn = document.getElementById('cp-submit-btn');
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Updating...`;
-
-      try {
-        const res = await fetch('/api/admin/change-password', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            current_password: currentPw,
-            new_password: newPw
-          })
-        });
-        const data = await res.json();
-        if (data.success) {
-          showToast('✅ Password changed successfully!');
-          cpModal.classList.add('hidden');
-          cpForm.reset();
-        } else {
-          showToast(data.error || 'Failed to change password', 'error');
-        }
-      } catch (err) {
-        showToast('Network error while updating password', 'error');
-      } finally {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = `<i class="fa-solid fa-lock"></i> <span>Update Password</span>`;
-      }
-    });
-  }
+  // Poll for new incoming orders every 15 seconds while dashboard is open
+  setInterval(() => {
+    if (localStorage.getItem('admin_token')) {
+      loadStats();
+    }
+  }, 15000);
 });

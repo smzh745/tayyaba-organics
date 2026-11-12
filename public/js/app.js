@@ -409,6 +409,8 @@ function closeQuickView() {
   quickviewModal.classList.add('hidden');
   document.body.style.overflow = '';
 }
+window.closeQuickView = closeQuickView;
+window.openQuickView = openQuickView;
 
 // -------------------------------------------------------------
 // REVIEWS FETCH & RENDER
@@ -523,16 +525,18 @@ function closeCheckoutModal() {
 
 async function handleCodOrderSubmit(e) {
   e.preventDefault();
-  const submitBtn = document.getElementById('submit-cod-order-btn');
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Placing Order...`;
+  const submitBtn = document.getElementById('confirm-order-btn') || document.getElementById('submit-cod-order-btn');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Placing Order...`;
+  }
 
   const payload = {
     customer_name: document.getElementById('order-name').value.trim(),
     customer_phone: document.getElementById('order-phone').value.trim(),
     shipping_address: document.getElementById('order-address').value.trim(),
     city: document.getElementById('order-city').value.trim(),
-    order_notes: document.getElementById('order-notes').value.trim(),
+    order_notes: (document.getElementById('order-notes') ? document.getElementById('order-notes').value.trim() : ''),
     items: cart
   };
 
@@ -548,9 +552,14 @@ async function handleCodOrderSubmit(e) {
       cart = [];
       saveCartToStorage();
 
-      document.getElementById('success-order-num').textContent = `#${data.order.order_number}`;
-      document.getElementById('success-customer-name').textContent = data.order.customer_name;
-      document.getElementById('success-order-total').textContent = formatPKR(data.order.total_amount);
+      const numEl = document.getElementById('success-order-num');
+      if (numEl) numEl.textContent = `#${data.order.order_number}`;
+
+      const nameEl = document.getElementById('success-customer-name');
+      if (nameEl) nameEl.textContent = data.order.customer_name;
+
+      const totalEl = document.getElementById('success-order-total');
+      if (totalEl) totalEl.textContent = formatPKR(data.order.total_amount);
 
       checkoutFormContainer.classList.add('hidden');
       checkoutSuccessContainer.classList.remove('hidden');
@@ -562,8 +571,10 @@ async function handleCodOrderSubmit(e) {
     console.error('Order placement error:', err);
     showToast('Network error while placing order.', 'error');
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Confirm Cash on Delivery Order</span>`;
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i class="fa-solid fa-check"></i> <span>Confirm Order (Pay on Delivery)</span>`;
+    }
   }
 }
 
@@ -590,27 +601,55 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // Cart Drawer open/close
-  document.getElementById('cart-toggle-btn').addEventListener('click', openCart);
-  document.getElementById('close-cart-btn').addEventListener('click', closeCart);
-  cartBackdrop.addEventListener('click', closeCart);
-  document.getElementById('cart-start-shopping-btn').addEventListener('click', () => {
-    closeCart();
-    window.location.hash = '#products';
-  });
+  const cartToggleBtn = document.getElementById('cart-toggle-btn');
+  if (cartToggleBtn) cartToggleBtn.addEventListener('click', openCart);
+
+  const closeCartBtn = document.getElementById('close-cart-btn');
+  if (closeCartBtn) closeCartBtn.addEventListener('click', closeCart);
+
+  if (cartBackdrop) cartBackdrop.addEventListener('click', closeCart);
+
+  const startShopBtn = document.getElementById('cart-start-shopping-btn');
+  if (startShopBtn) {
+    startShopBtn.addEventListener('click', () => {
+      closeCart();
+      window.location.hash = '#products';
+    });
+  }
 
   // Checkout Modal
-  document.getElementById('open-checkout-btn').addEventListener('click', openCheckoutModal);
-  document.getElementById('close-checkout-modal-btn').addEventListener('click', closeCheckoutModal);
-  checkoutBackdrop.addEventListener('click', closeCheckoutModal);
-  codOrderForm.addEventListener('submit', handleCodOrderSubmit);
-  document.getElementById('success-continue-btn').addEventListener('click', () => {
-    closeCheckoutModal();
-    window.location.hash = '#products';
-  });
+  const checkoutBtn = document.getElementById('cart-checkout-btn') || document.getElementById('open-checkout-btn');
+  if (checkoutBtn) checkoutBtn.addEventListener('click', openCheckoutModal);
+
+  const closeCheckoutBtn = document.getElementById('close-checkout-modal-btn');
+  if (closeCheckoutBtn) closeCheckoutBtn.addEventListener('click', closeCheckoutModal);
+
+  if (checkoutBackdrop) checkoutBackdrop.addEventListener('click', closeCheckoutModal);
+
+  if (codOrderForm) codOrderForm.addEventListener('submit', handleCodOrderSubmit);
+
+  const continueBtn = document.getElementById('success-continue-btn');
+  if (continueBtn) {
+    continueBtn.addEventListener('click', () => {
+      closeCheckoutModal();
+      window.location.hash = '#products';
+    });
+  }
 
   // Quick View Close
-  document.getElementById('close-quickview-btn').addEventListener('click', closeQuickView);
-  quickviewBackdrop.addEventListener('click', closeQuickView);
+  const closeQvBtn = document.getElementById('close-quickview-btn');
+  if (closeQvBtn) closeQvBtn.addEventListener('click', closeQuickView);
+
+  if (quickviewBackdrop) quickviewBackdrop.addEventListener('click', closeQuickView);
+
+  // Close modals on Escape key
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeQuickView();
+      closeCart();
+      closeCheckoutModal();
+    }
+  });
 
   // Review Modal
   const openReviewModalBtn = document.getElementById('open-review-modal-btn');

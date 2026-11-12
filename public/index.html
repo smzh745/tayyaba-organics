@@ -520,6 +520,7 @@
           <p class="text-xs text-slate-500 mb-4">Shukriya! Your order has been placed with Cash on Delivery.</p>
 
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-xs text-left max-w-sm mx-auto mb-6 space-y-1.5">
+            <span id="success-customer-name" class="hidden"></span>
             <div class="flex justify-between">
               <span class="text-slate-500">Order Number:</span>
               <strong id="success-order-num" class="text-slate-800 font-mono">ORD-0000</strong>
@@ -546,13 +547,13 @@
   <!-- Quick View Modal -->
   <div id="quickview-modal" class="fixed inset-0 z-50 overflow-y-auto hidden">
     <div class="min-h-screen px-4 flex items-center justify-center p-4">
-      <div id="quickview-backdrop" class="fixed inset-0 bg-black/60 backdrop-blur-sm"></div>
+      <div id="quickview-backdrop" onclick="closeQuickView()" class="fixed inset-0 bg-black/60 backdrop-blur-sm cursor-pointer"></div>
 
-      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 relative z-10 border border-slate-200 my-8">
-        <button id="close-quickview-btn" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 p-2 z-10">
-          <i class="fa-solid fa-xmark text-lg"></i>
+      <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 sm:p-8 relative z-20 border border-slate-200 my-8">
+        <button id="close-quickview-btn" onclick="closeQuickView()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700 p-2 z-30 cursor-pointer rounded-full hover:bg-slate-100 transition-colors" title="Close Preview">
+          <i class="fa-solid fa-xmark text-xl"></i>
         </button>
-        <div id="quickview-content"></div>
+        <div id="quickview-content" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
       </div>
     </div>
   </div>

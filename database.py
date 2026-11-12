@@ -132,53 +132,53 @@ def init_db(force_reseed=False):
     print("Tayyaba Organics database updated at", DB_PATH)
 
 def seed_tayyaba_organics_data(cursor):
-    # Strictly the 3 core products: Hair Oil, Hair Shampoo (Cleanser), Hair Mask matching @organicstayyaba
+    # Strictly the products from @organicstayyaba (Hair Cleanser, Nourishing Oil, Hair Mask)
     sample_products = [
         (
-            "Tayyaba Organics Nourishing Herbal Hair Oil",
+            "Tayyaba Organic Nourishing Hair Oil",
             "Hair Oil",
             1450.00,
-            1950.00,
-            "100% pure cold-pressed botanical hair oil formulated with pure Rosemary extracts, Kalonji (Black Seed), and Castor seed oil. Stops hair fall, revitalizes weak roots, and stimulates new hair growth. Handmade, Sulfate-Free & Cruelty-Free.",
-            "Pure Rosemary Extract, Cold-Pressed Kalonji (Black Seed) Oil, Castor Oil, Biotin, Sweet Almond Oil, Vitamin E.",
-            "Visibly stops hair shedding within 3 weeks, awakens dormant scalp follicles, eliminates dryness and dandruff.",
-            "Apply 4-6 drops directly onto scalp roots using the dropper. Massage gently for 5 minutes. Leave on for 2 hours or overnight before washing.",
+            None,
+            "100% Organic, handmade nourishing hair oil. Pure by nature, sulfate-free & cruelty-free. Nourishes scalp roots and restores natural hair vitality.",
+            "100% Pure Botanical Extracts, Nourishing Herbal Oils.",
+            "Nourishes hair roots, eliminates scalp dryness, and restores natural hair strength.",
+            "Apply 4-6 drops to scalp roots, massage gently, leave for 2 hours or overnight before cleansing.",
             "https://images.unsplash.com/photo-1608248597359-009139265f24?auto=format&fit=crop&w=800&q=80",
-            60,
-            4.9,
-            156,
+            50,
+            5.0,
+            0,
             1,
-            "Handmade • Best Seller"
+            "Handmade • 100% Organic"
         ),
         (
-            "Tayyaba Organics Herbal Hair Cleanser",
-            "Hair Shampoo",
+            "Tayyaba Organic Hair Cleanser",
+            "Hair Cleanser",
             1199.00,
-            1550.00,
-            "Handmade 100% Sulfate-Free (SLS/SLES free) and Paraben-free botanical hair cleanser. Gently cleanses the scalp without stripping natural moisture, leaving hair silky, soft, and completely frizz-free.",
-            "Hydrolyzed Botanical Keratin, Aloe Vera Gel, Coconut Glucosides, Amla, Reetha & Shikakai Extracts, Provitamin B5.",
-            "Controls humidity frizz, salon-grade silky softness, prevents breakage, safe for chemically treated or colored hair.",
-            "Lather onto thoroughly wet hair and gently massage roots for 2 minutes to let botanicals absorb. Rinse cleanly with cool water.",
+            None,
+            "Handmade 100% Sulfate-Free & Cruelty-Free botanical hair cleanser. Cleanses hair gently without stripping natural moisture.",
+            "Hydrolyzed Botanical Extracts, Gentle Plant-Derived Cleansers.",
+            "Gentle scalp cleanse, controls frizz, zero sulfates, preserves natural hair oils.",
+            "Lather onto wet hair, massage scalp for 2 minutes, rinse with cool water.",
             "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=800&q=80",
-            75,
-            4.9,
-            118,
+            50,
+            5.0,
+            0,
             1,
             "Sulfate-Free • Handmade"
         ),
         (
-            "Tayyaba Organics Restorative Herbal Hair Mask",
+            "Tayyaba Organic Hair Mask",
             "Hair Mask",
             1599.00,
-            2100.00,
-            "Intensive weekly rejuvenation therapy. Fermented rice water proteins and hibiscus flower extracts deeply rebuild broken bonds, repair dryness from hard water, and restore brilliant mirror shine.",
-            "Fermented Rice Water Filtrate, Hibiscus Rosa Flower Extract, Raw Shea Butter, Wheat Protein, Argan Oil.",
-            "Deep root-to-tip hydration, repairs heat and chemical damage, transforms coarse hair into velvety soft strands.",
-            "After shampooing, apply generously to clean, damp hair from roots to ends. Leave for 15-20 minutes, then rinse thoroughly.",
+            None,
+            "Handmade intensive herbal hair mask for deep conditioning, damage repair, and silky softness. Pure by nature.",
+            "Pure Herbal Extracts, Botanical Conditioning Oils.",
+            "Deep conditioning, repairs dryness and damage, leaves hair soft and manageable.",
+            "Apply after hair cleansing from roots to ends, leave for 15-20 minutes, then rinse cleanly.",
             "https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?auto=format&fit=crop&w=800&q=80",
             50,
-            4.8,
-            94,
+            5.0,
+            0,
             1,
             "Cruelty-Free • Deep Repair"
         )
@@ -189,67 +189,6 @@ def seed_tayyaba_organics_data(cursor):
         name, category, price, original_price, description, ingredients, benefits, how_to_use, image, stock, rating, reviews_count, is_featured, badge
     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, sample_products)
-
-    sample_reviews = [
-        (
-            1,
-            "Fatima Zahra (Lahore)",
-            5,
-            "Hair fall completely stopped in 3 weeks!",
-            "I was experiencing massive hair shedding. Tried expensive commercial brands but Tayyaba Organics Hair Oil actually worked! Within 3 weeks my hair fall reduced significantly and baby hairs started sprouting. Cash on Delivery was super fast in Lahore!",
-            1
-        ),
-        (
-            2,
-            "Ayesha Siddiqui (Karachi)",
-            5,
-            "Best sulfate-free shampoo in Pakistan",
-            "Most sulfate-free shampoos in Pakistan make hair super dry, but Tayyaba Organics Keratin shampoo leaves hair so soft and silky even in Karachi's humid weather.",
-            1
-        ),
-        (
-            3,
-            "Maryam Tariq (Islamabad)",
-            5,
-            "Hair Mask made my hair feel like silk",
-            "My hair was dry and brittle due to hard water. Used the hair mask twice and the texture completely changed. Soft, bouncy, and shiny!",
-            1
-        )
-    ]
-
-    cursor.executemany("""
-    INSERT INTO reviews (product_id, customer_name, rating, title, comment, verified)
-    VALUES (?, ?, ?, ?, ?, ?)
-    """, sample_reviews)
-
-    sample_orders = [
-        (
-            "ORD-78401",
-            "Sadia Mansoor",
-            "+92 301 2345678",
-            "sadia.m@gmail.com",
-            "House 18-C, Street 4, Phase 6, DHA",
-            "Lahore",
-            "54000",
-            "Please deliver before 5 PM",
-            "Cash on Delivery (COD)",
-            2649.00,
-            0.0,
-            2649.00,
-            "Confirmed",
-            json.dumps([
-                {"id": 1, "name": "Tayyaba Organics Herbal Hair Growth Oil", "price": 1450.00, "quantity": 1, "image": "https://images.unsplash.com/photo-1608248597359-009139265f24?auto=format&fit=crop&w=800&q=80"},
-                {"id": 2, "name": "Tayyaba Organics Keratin Herbal Hair Shampoo", "price": 1199.00, "quantity": 1, "image": "https://images.unsplash.com/photo-1535585209827-a15fcdbc4c2d?auto=format&fit=crop&w=800&q=80"}
-            ])
-        )
-    ]
-
-    cursor.executemany("""
-    INSERT INTO orders (
-        order_number, customer_name, customer_phone, customer_email, shipping_address,
-        city, postal_code, order_notes, payment_method, subtotal, delivery_fee, total_amount, status, items_json
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    """, sample_orders)
 
 if __name__ == "__main__":
     init_db(force_reseed=True)

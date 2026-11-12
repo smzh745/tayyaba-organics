@@ -275,12 +275,11 @@ function renderProductsGrid(products) {
         <!-- Details -->
         <div class="p-5 flex-1 flex flex-col justify-between">
           <div>
-            <div class="flex items-center justify-between text-xs mb-1.5">
+            <div class="flex items-center justify-between text-xs mb-2">
               <span class="font-bold uppercase tracking-wider text-emerald-800 text-[10px]">${product.category}</span>
-              <div class="flex items-center gap-1 text-amber-400">
-                <i class="fa-solid fa-star text-[10px]"></i>
-                <span class="text-slate-700 font-bold text-xs">${product.rating}</span>
-              </div>
+              <span class="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100 flex items-center gap-1">
+                <i class="fa-solid fa-leaf text-[9px]"></i> Pure By Nature
+              </span>
             </div>
 
             <h3 class="font-serif-display font-bold text-slate-900 text-base mb-2 hover:text-botanical-800 cursor-pointer" onclick="openQuickView(${product.id})">
@@ -342,21 +341,13 @@ function openQuickView(productId) {
         </span>
         <h3 class="font-serif-display text-xl font-bold text-slate-900 mt-2 mb-1.5">${product.name}</h3>
         
-        <div class="flex items-center gap-2 mb-3">
-          <div class="flex text-amber-400 text-xs gap-0.5">
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-            <i class="fa-solid fa-star"></i>
-          </div>
-          <span class="text-xs font-bold text-slate-700">${product.rating} / 5.0</span>
+        <div class="inline-flex items-center gap-1.5 text-xs text-emerald-800 font-bold bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 mb-3">
+          <i class="fa-solid fa-leaf text-[10px]"></i> Pure By Nature &bull; Handmade
         </div>
 
         <div class="flex items-baseline gap-2.5 mb-4 pb-3 border-b border-slate-100">
           <span class="text-xl font-bold text-botanical-900 font-serif-display">${formatPKR(product.price)}</span>
           ${product.original_price ? `<span class="text-xs text-slate-400 line-through">${formatPKR(product.original_price)}</span>` : ''}
-          ${discountPercent ? `<span class="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">Save ${discountPercent}%</span>` : ''}
         </div>
 
         <div class="space-y-2.5 text-xs text-slate-600 mb-5">
@@ -436,7 +427,15 @@ async function fetchReviews() {
 
 function renderReviewsGrid(reviews) {
   if (!reviews || reviews.length === 0) {
-    reviewsGrid.innerHTML = `<div class="col-span-full text-center py-6 text-slate-400 text-xs">No reviews yet. Be the first to review!</div>`;
+    reviewsGrid.innerHTML = `
+      <div class="col-span-full text-center py-10 bg-slate-50/70 rounded-2xl border border-dashed border-slate-200">
+        <div class="w-10 h-10 mx-auto rounded-full bg-emerald-100/60 text-emerald-800 flex items-center justify-center text-base mb-2">
+          <i class="fa-solid fa-leaf"></i>
+        </div>
+        <p class="font-bold text-slate-800 text-xs mb-1">No customer reviews yet</p>
+        <p class="text-[11px] text-slate-500 max-w-sm mx-auto mb-3">Order via Cash on Delivery and be the first to share your experience with us!</p>
+      </div>
+    `;
     return;
   }
 

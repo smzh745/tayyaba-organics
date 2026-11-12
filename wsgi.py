@@ -370,3 +370,4 @@ def application(environ, start_response):
     # 404 fallback
     start_response("404 Not Found", headers + [("Content-Type", "text/html")])
     return [b"<h1>404 Not Found</h1><p><a href='/'>Return to Store</a></p>"]
+

@@ -5,3 +5,4 @@ services:
     buildCommand: ""
     startCommand: "python3 server.py"
     plan: free
+

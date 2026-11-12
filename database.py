@@ -132,14 +132,14 @@ def init_db(force_reseed=False):
     print("Tayyaba Organics database updated at", DB_PATH)
 
 def seed_tayyaba_organics_data(cursor):
-    # Strictly the 3 core products: Hair Oil, Hair Shampoo, Hair Mask
+    # Strictly the 3 core products: Hair Oil, Hair Shampoo (Cleanser), Hair Mask matching @organicstayyaba
     sample_products = [
         (
-            "Tayyaba Organics Herbal Hair Growth Oil",
+            "Tayyaba Organics Nourishing Herbal Hair Oil",
             "Hair Oil",
             1450.00,
             1950.00,
-            "100% pure cold-pressed botanical hair oil formulated with pure Rosemary extracts, Kalonji (Black Seed), and Castor seed oil. Stops hair fall, revitalizes weak roots, and stimulates new hair growth.",
+            "100% pure cold-pressed botanical hair oil formulated with pure Rosemary extracts, Kalonji (Black Seed), and Castor seed oil. Stops hair fall, revitalizes weak roots, and stimulates new hair growth. Handmade, Sulfate-Free & Cruelty-Free.",
             "Pure Rosemary Extract, Cold-Pressed Kalonji (Black Seed) Oil, Castor Oil, Biotin, Sweet Almond Oil, Vitamin E.",
             "Visibly stops hair shedding within 3 weeks, awakens dormant scalp follicles, eliminates dryness and dandruff.",
             "Apply 4-6 drops directly onto scalp roots using the dropper. Massage gently for 5 minutes. Leave on for 2 hours or overnight before washing.",
@@ -148,14 +148,14 @@ def seed_tayyaba_organics_data(cursor):
             4.9,
             156,
             1,
-            "Best Seller"
+            "Handmade • Best Seller"
         ),
         (
-            "Tayyaba Organics Keratin Herbal Hair Shampoo",
-            "Shampoo",
+            "Tayyaba Organics Herbal Hair Cleanser",
+            "Hair Shampoo",
             1199.00,
             1550.00,
-            "100% Sulfate-free (SLS/SLES free) and Paraben-free botanical shampoo. Gently cleanses the scalp without stripping natural moisture, leaving hair silky, soft, and completely frizz-free.",
+            "Handmade 100% Sulfate-Free (SLS/SLES free) and Paraben-free botanical hair cleanser. Gently cleanses the scalp without stripping natural moisture, leaving hair silky, soft, and completely frizz-free.",
             "Hydrolyzed Botanical Keratin, Aloe Vera Gel, Coconut Glucosides, Amla, Reetha & Shikakai Extracts, Provitamin B5.",
             "Controls humidity frizz, salon-grade silky softness, prevents breakage, safe for chemically treated or colored hair.",
             "Lather onto thoroughly wet hair and gently massage roots for 2 minutes to let botanicals absorb. Rinse cleanly with cool water.",
@@ -164,7 +164,7 @@ def seed_tayyaba_organics_data(cursor):
             4.9,
             118,
             1,
-            "Sulfate Free"
+            "Sulfate-Free • Handmade"
         ),
         (
             "Tayyaba Organics Restorative Herbal Hair Mask",
@@ -180,7 +180,7 @@ def seed_tayyaba_organics_data(cursor):
             4.8,
             94,
             1,
-            "Deep Repair"
+            "Cruelty-Free • Deep Repair"
         )
     ]
 
